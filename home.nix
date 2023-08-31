@@ -1,6 +1,7 @@
-{ config
-, pkgs
-, ...
+{
+  config,
+  pkgs,
+  ...
 }: {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
@@ -172,8 +173,8 @@
     shellAliases = {
       ll = "ls -l";
       cdgo = "cd ~/Documents/code/github.com/back2nix";
-      cdnix = "cd ~/Documents/code/github.com/back2nix/nix/my-nix-config-huawei";
-      cdinfo = "cd ~/Documents/code/github.com/back2nix/info_command";
+      cdnix = "cd ~/Documents/code/github.com/back2nix/nix/my-nix-config-desktop";
+      cdinfo = "cd ~/Documents/code/github.com/back2nix/info";
       clip = "head -c -1|xclip -i -selection clipboard";
       rd = "readlink -f";
       update = "sudo nixos-rebuild switch";
