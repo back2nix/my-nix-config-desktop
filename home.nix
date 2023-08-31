@@ -209,4 +209,10 @@
   };
 
   #home.file.".tmux.conf".text = "./tmux.conf";
+
+  programs.adb.enable = true;
+  users.users.bg.extraGroups = ["adbusers"];
+  services.udev.packages = [
+    pkgs.android-udev-rules
+  ];
 }

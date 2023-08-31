@@ -254,11 +254,4 @@ in {
       cores = 3;
     };
   };
-
-  # adb
-  programs.adb.enable = true;
-  users.users.bg.extraGroups = ["adbusers"];
-  services.udev.packages = [
-    pkgs.android-udev-rules
-  ];
 }
