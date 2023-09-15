@@ -1,12 +1,74 @@
 {
   config,
   pkgs,
+  inputs,
+  lib,
   ...
-}: {
+}: let
+  user = "bg";
+in {
+  imports = [
+    # inputs.nix-colors.homeManagerModules.default
+    # inputs.xremap-flake.homeManagerModules.default
+  ];
+
+  xdg.configFile = {
+    "kitty/kitty.conf".source = ./kitty.conf;
+    "wal/templates/colorskitty.conf".source = ./pywalkittytemplate;
+  };
+
+  # services.xremap = {
+  #   config = {
+  #     keymap = [
+  #       {
+  #         name = "default map";
+  #         remap = {
+  #           super-d = {
+  #             remap = {
+  #               t = {
+  #                 launch = [ "telegram-desktop" ];
+  #               };
+  #               g = {
+  #                 launch = [ "google-chrome-stable" ];
+  #               };
+  #             };
+  #           };
+  #         };
+  #       }
+  #       {
+  #         name = "speaker not terminal";
+  #         # application = {
+  #         #   not = [ "kgx" ];
+  #         # };
+  #         remap = {
+  #           M-f = {
+  #             remap = {
+  #               p = {
+  #                 launch = [ "curl" "http://localhost:3111/echo/L_CTRL+L_ALT+P" ];
+  #               };
+  #               c = {
+  #                 launch = [ "curl" "http://localhost:3111/echo/L_CTRL+C" ];
+  #               };
+  #               f = {
+  #                 launch = [ "curl" "http://localhost:3111/echo/L_ALT+F" ];
+  #               };
+  #               z = {
+  #                 launch = [ "curl" "http://localhost:3111/echo/L_ALT+Z" ];
+  #               };
+  #             };
+  #           };
+  #         };
+  #       }
+  #     ];
+  #   };
+  # };
+
+  # colorScheme = inputs.nix-colors.colorSchemes.dracula;
+
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
-  home.username = "bg";
-  home.homeDirectory = "/home/bg";
+  home.username = "${user}";
+  home.homeDirectory = "/home/${user}";
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -18,6 +80,8 @@
   home.stateVersion = "23.05"; # Please read the comment before changing.
 
   programs.direnv.enable = true;
+
+  # my-yandex-browser =
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
@@ -60,8 +124,26 @@
     alejandra
     niv
     distrobox
+    dconf
+    # inputs.xremap-flake.packages.${system}.default
+    libnotify
+    tree
+    nix-template
+    python3
+    marksman
+    encfs
+    difftastic
+    bat
+    tokei
+    # my-yandex-browser
+    # (pkgs.callPackage ./yandex-browser.nix { })
     # gnome.gnome-terminal
   ];
+
+  # nixpkgs.config.allowUnfreePredicate = pkg:
+  #   builtins.elem (lib.getName pkg) [
+  #     "yandex-browser"
+  #   ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
@@ -71,9 +153,11 @@
     # # symlink to the Nix store copy.
     # ".screenrc".source = dotfiles/screenrc;
 
-    ".tmux.conf" = {
-      text = builtins.readFile ./tmux/tmux.conf;
-    };
+    ".tmux.conf".source = ./tmux/tmux.conf;
+
+    # ".tmux.conf" = {
+    #   text = builtins.readFile ./tmux/tmux.conf;
+    # };
 
     #".config/nvim/init.lua" = {
     #  text = (builtins.readFile ./init.lua);
@@ -97,7 +181,7 @@
   #
   # if you don't want to manage your shell through Home Manager.
   home.sessionVariables = {
-    # EDITOR = "emacs";
+    EDITOR = "nvim";
   };
 
   #environment.systemPackages = [ pkgs.neovim ];
@@ -124,19 +208,19 @@
       ''
         # >>> mamba initialize >>>
         # !! Contents within this block are managed by 'mamba init' !!
-        export MAMBA_EXE="/nix/store/9dkj1d9xa3dn3yf8dx1h61z0cp3j6832-micromamba-1.2.0/bin/micromamba";
-        export MAMBA_ROOT_PREFIX="/home/bg/micromamba";
-        __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
-        if [ $? -eq 0 ]; then
-            eval "$__mamba_setup"
-        else
-            if [ -f "/home/bg/micromamba/etc/profile.d/micromamba.sh" ]; then
-                . "/home/bg/micromamba/etc/profile.d/micromamba.sh"
-            else
-                export  PATH="/home/bg/micromamba/bin:$PATH"  # extra space after export prevents interference from conda init
-            fi
-        fi
-        unset __mamba_setup
+        # export MAMBA_EXE="/nix/store/9dkj1d9xa3dn3yf8dx1h61z0cp3j6832-micromamba-1.2.0/bin/micromamba";
+        # export MAMBA_ROOT_PREFIX="/home/bg/micromamba";
+        # __mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
+        # if [ $? -eq 0 ]; then
+        #     eval "$__mamba_setup"
+        # else
+        #     if [ -f "/home/bg/micromamba/etc/profile.d/micromamba.sh" ]; then
+        #         . "/home/bg/micromamba/etc/profile.d/micromamba.sh"
+        #     else
+        #         export  PATH="/home/bg/micromamba/bin:$PATH"  # extra space after export prevents interference from conda init
+        #     fi
+        # fi
+        # unset __mamba_setup
         # <<< mamba initialize <<<
 
         DIRSTACKFILE="$HOME/.dirs"
@@ -172,13 +256,21 @@
     };
     shellAliases = {
       ll = "ls -l";
+      ch = "stat --format '%a'";
       cdgo = "cd ~/Documents/code/github.com/back2nix";
-      cdnix = "cd ~/Documents/code/github.com/back2nix/nix/my-nix-config-desktop";
+      cdnix = "cd ~/Documents/code/github.com/back2nix/nix/my-nix-config-huawei";
       cdinfo = "cd ~/Documents/code/github.com/back2nix/info";
       clip = "head -c -1|xclip -i -selection clipboard";
       rd = "readlink -f";
       update = "sudo nixos-rebuild switch";
       hupdate = "home-manager switch";
+      # https://github.com/name-snrl/nixos-configuration/blob/master/modules/home/aliases.nix
+      ip = "ip --color=auto";
+      dt = "difft";
+      bcat = "bat --pager=never --style=changes,rule,numbers,snip";
+      tk = "tokei";
+      sctl = "systemctl";
+      sudo = "sudo ";
     };
     history = {
       size = 10000;
@@ -208,11 +300,42 @@
     ];
   };
 
-  #home.file.".tmux.conf".text = "./tmux.conf";
+  programs.git = {
+    enable = true;
+    userName = "back2nix";
+    userEmail = "back2nix@list.ru";
+    aliases = {
+      pu = "push";
+      co = "checkout";
+      cm = "commit";
+      # dt = "diff";
+      lg = "log --stat";
+    };
+    difftastic = {
+      enable = true;
+    };
+    # extraConfig = {
+    #   init.defaultBranch = "main";
+    #   url = {
+    #     "git@github.com:".pushInsteadOf = "https://github.com/";
+    #     "git@gist.github.com:".pushInsteadOf = "https://gist.github.com/";
+    #   };
+    #   pager.difftool = true;
+    #
+    #   diff = {
+    #     tool = "difftastic";
+    #   };
+    #
+    #   difftool = {
+    #     prompt = false;
+    #     "difftastic".cmd = ''difft "$LOCAL" "$REMOTE"'';
+    #   };
+    # };
+  };
 
-  programs.adb.enable = true;
-  users.users.bg.extraGroups = ["adbusers"];
-  services.udev.packages = [
-    pkgs.android-udev-rules
-  ];
+  # xdg.mimeApps.defaultApplications = {
+  #   "text/palin" = ["nvim"];
+  #   "video/png" = ["mvp.destop"];
+  #   "video/*" = ["mvp.destop"];
+  # };
 }

@@ -1,11 +1,11 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-{
-  config,
-  pkgs,
-  ...
-}: let
+{ config
+, pkgs
+, ...
+}:
+let
   cuda = with pkgs;
     callPackage "/etc/nixpkgs/pkgs/development/compilers/cudatoolkit/common.nix" {
       version = "11.8.0";
@@ -21,7 +21,9 @@
     version = "520.61.05";
     gcc = "gcc11";
   });
-in {
+  user = "bg";
+in
+{
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
@@ -32,7 +34,7 @@ in {
   boot.loader.systemd-boot.enable = true;
   #boot.loader.grub.device = "/dev/sdb";
 
-  boot.supportedFilesystems = ["ntfs"];
+  boot.supportedFilesystems = [ "ntfs" ];
 
   #  boot.loader = {
   #	  efi = {
@@ -90,7 +92,7 @@ in {
     driSupport32Bit = true;
   };
 
-  services.xserver.videoDrivers = ["nvidia"];
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   boot.kernelPackages =
     pkgs.linuxPackages
@@ -151,13 +153,13 @@ in {
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  nix.settings.experimental-features = ["nix-command" "flakes"];
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.bg = {
     isNormalUser = true;
     description = "bg";
-    extraGroups = ["networkmanager" "wheel" "docker"];
+    extraGroups = [ "networkmanager" "wheel" "docker" ];
     packages = with pkgs; [
       firefox
       google-chrome
@@ -172,11 +174,13 @@ in {
       tmux
       wget
       direnv
+      gnome.gnome-terminal
+      kitty
       #  thunderbird
     ];
   };
 
-  environment.shells = with pkgs; [zsh];
+  environment.shells = with pkgs; [ zsh ];
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
   # environment.binsh = "${pkgs.dash}/bin/dash";
@@ -192,7 +196,7 @@ in {
   systemd.targets.suspend.enable = false;
   systemd.targets.hibernate.enable = false;
   systemd.targets.hybrid-sleep.enable = false;
-  systemd.targets."bluetooth".after = ["systemd-tmpfiles-setup.service"];
+  systemd.targets."bluetooth".after = [ "systemd-tmpfiles-setup.service" ];
   systemd.tmpfiles.rules = [
     "d /var/lib/bluetooth 700 root root - -"
   ];
@@ -254,4 +258,13 @@ in {
       cores = 3;
     };
   };
+
+  #SUBSYSTEM=="input", KERNEL=="event[0-9]*", GROUP="${user}", MODE:="0660"
+  services.udev.extraRules = ''
+    KERNEL=="uinput", GROUP="${user}", MODE:="0660"
+  '';
+
+  # services.xrdp.enable = true;
+  # services.xrdp.defaultWindowManager = "${pkgs.icewm}/bin/icewm";
+  # networking.firewall.allowedTCPPorts = [ 3389 ];
 }
