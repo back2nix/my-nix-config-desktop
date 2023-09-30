@@ -1,12 +1,13 @@
-{
-  config,
-  pkgs,
-  inputs,
-  lib,
-  ...
-}: let
+{ config
+, pkgs
+, inputs
+, lib
+, ...
+}:
+let
   user = "bg";
-in {
+in
+{
   imports = [
     # inputs.nix-colors.homeManagerModules.default
     # inputs.xremap-flake.homeManagerModules.default
@@ -126,7 +127,7 @@ in {
     distrobox
     dconf
     # inputs.xremap-flake.packages.${system}.default
-    libnotify
+    # libnotify
     tree
     nix-template
     python3
@@ -135,15 +136,25 @@ in {
     difftastic
     bat
     tokei
+    android-tools
+    patchelf
+    gtk3
+    gnome3.adwaita-icon-theme
+    devbox
+    # git diff
+    # diff-so-fancy
+    tig # diff and commit view
+    # microsoft-edge
     # my-yandex-browser
     # (pkgs.callPackage ./yandex-browser.nix { })
     # gnome.gnome-terminal
   ];
 
-  # nixpkgs.config.allowUnfreePredicate = pkg:
-  #   builtins.elem (lib.getName pkg) [
-  #     "yandex-browser"
-  #   ];
+  nixpkgs.config.allowUnfreePredicate = pkg:
+    builtins.elem (lib.getName pkg) [
+      # "yandex-browser"
+      # "microsoft-edge-stable"
+    ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
@@ -154,6 +165,8 @@ in {
     # ".screenrc".source = dotfiles/screenrc;
 
     ".tmux.conf".source = ./tmux/tmux.conf;
+    ".gitconfig".source = ./gitconfig;
+    ".cargo/config".source = ./cargoconfig;
 
     # ".tmux.conf" = {
     #   text = builtins.readFile ./tmux/tmux.conf;
@@ -182,6 +195,7 @@ in {
   # if you don't want to manage your shell through Home Manager.
   home.sessionVariables = {
     EDITOR = "nvim";
+    GTK_THEME = "Adwaita:dark";
   };
 
   #environment.systemPackages = [ pkgs.neovim ];
@@ -240,6 +254,8 @@ in {
         setopt pushdignoredups
         ## This reverts the +/- operators.
         setopt pushdminus
+
+        export XDG_DATA_DIRS=$XDG_DATA_DIRS:/usr/share:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share
       '';
     oh-my-zsh = {
       enable = true;
@@ -255,10 +271,12 @@ in {
       theme = "agnoster-nix";
     };
     shellAliases = {
+      # n = "nvim";
       ll = "ls -l";
       ch = "stat --format '%a'";
+      cdspeak = "cd ~/Documents/code/github.com/back2nix/speaker";
       cdgo = "cd ~/Documents/code/github.com/back2nix";
-      cdnix = "cd ~/Documents/code/github.com/back2nix/nix/my-nix-config-huawei";
+      cdnix = "cd ~/Documents/code/github.com/back2nix/nix/my-nix-config-desktop";
       cdinfo = "cd ~/Documents/code/github.com/back2nix/info";
       clip = "head -c -1|xclip -i -selection clipboard";
       rd = "readlink -f";
@@ -311,10 +329,16 @@ in {
       # dt = "diff";
       lg = "log --stat";
     };
-    difftastic = {
-      enable = true;
-    };
+    difftastic.enable = true; # git diff
+    # delta.enable = true; # git diff
+
     # extraConfig = {
+    #   core = {
+    #     pager = "diff-so-fancy | less --tabs=4 -RFX";
+    #   };
+    # };
+
+    # iniContent = {
     #   init.defaultBranch = "main";
     #   url = {
     #     "git@github.com:".pushInsteadOf = "https://github.com/";
