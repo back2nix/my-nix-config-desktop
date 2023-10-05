@@ -144,6 +144,7 @@ in
     # git diff
     # diff-so-fancy
     tig # diff and commit view
+    file
     # microsoft-edge
     # my-yandex-browser
     # (pkgs.callPackage ./yandex-browser.nix { })
@@ -167,6 +168,7 @@ in
     ".tmux.conf".source = ./tmux/tmux.conf;
     ".gitconfig".source = ./gitconfig;
     ".cargo/config".source = ./cargoconfig;
+    ".gdbinit".source = ./gdbinit;
 
     # ".tmux.conf" = {
     #   text = builtins.readFile ./tmux/tmux.conf;
@@ -276,7 +278,14 @@ in
       ch = "stat --format '%a'";
       cdspeak = "cd ~/Documents/code/github.com/back2nix/speaker";
       cdgo = "cd ~/Documents/code/github.com/back2nix";
-      cdnix = "cd ~/Documents/code/github.com/back2nix/nix/my-nix-config-desktop";
+      fe = "rg --files ''\${1:-.} | fzf --preview 'bat -f {}' | xargs $EDITOR";
+      # Search content and Edit
+      se = ''        fileline = $(rg - n ''${1:-.} | fzf | awk '{print $1}' | sed 's/.$//')
+                    $EDITOR ''${fileline%%:*} +''${fileline##*:}
+      '';
+      fl = ''git log --oneline --color=always | fzf --ansi --preview=" echo { } | cut - d ' ' - f 1 | xargs - I @ sh -c 'git log --pretty=medium -n 1 @; git diff @^ @' | bat --color=always" | cut -d ' ' -f 1 | xargs git log --pretty=short -n 1'';
+      gd = "git diff --name-only --diff-filter=d $@ | xargs bat --diff";
+      cdnix = "cd ~/Documents/code/github.com/back2nix/nix/my-nix-config-*";
       cdinfo = "cd ~/Documents/code/github.com/back2nix/info";
       clip = "head -c -1|xclip -i -selection clipboard";
       rd = "readlink -f";

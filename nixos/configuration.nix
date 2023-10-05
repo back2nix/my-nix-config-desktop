@@ -28,7 +28,16 @@ in
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ./cachix.nix
+    ((builtins.fetchTarball {
+      url = "https://github.com/symphorien/nixseparatedebuginfod/archive/9b7a087a98095c26d1ad42a05102e0edfeb49b59.tar.gz";
+      sha256 = "sha256:1jbkv9mg11bcx3gg13m9d1jmg4vim7prny7bqsvlx9f78142qrlw";
+    })
+    + "/module.nix")
   ];
+
+  # config = {
+  services.nixseparatedebuginfod.enable = true;
+  # };
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -132,6 +141,8 @@ in
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
+
+  services.lorri.enable = true; # replace default nix-shell
 
   # Enable sound with pipewire.
   sound.enable = true;
