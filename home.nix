@@ -1,13 +1,12 @@
-{ config
-, pkgs
-, inputs
-, lib
-, ...
-}:
-let
-  user = "bg";
-in
 {
+  config,
+  pkgs,
+  inputs,
+  lib,
+  ...
+}: let
+  user = "bg";
+in {
   imports = [
     # inputs.nix-colors.homeManagerModules.default
     # inputs.xremap-flake.homeManagerModules.default
@@ -130,7 +129,6 @@ in
     # libnotify
     tree
     nix-template
-    python3
     marksman
     encfs
     difftastic
@@ -145,6 +143,8 @@ in
     # diff-so-fancy
     tig # diff and commit view
     file
+    python310
+    python310Packages.pygments
     # microsoft-edge
     # my-yandex-browser
     # (pkgs.callPackage ./yandex-browser.nix { })
@@ -169,6 +169,7 @@ in
     ".gitconfig".source = ./gitconfig;
     ".cargo/config".source = ./cargoconfig;
     ".gdbinit".source = ./gdbinit;
+    ".gdbinit.d/init".source = ./gdbinit.d_init;
 
     # ".tmux.conf" = {
     #   text = builtins.readFile ./tmux/tmux.conf;

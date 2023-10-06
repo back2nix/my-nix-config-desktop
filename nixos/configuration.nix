@@ -1,11 +1,11 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-{ config
-, pkgs
-, ...
-}:
-let
+{
+  config,
+  pkgs,
+  ...
+}: let
   cuda = with pkgs;
     callPackage "/etc/nixpkgs/pkgs/development/compilers/cudatoolkit/common.nix" {
       version = "11.8.0";
@@ -22,17 +22,16 @@ let
     gcc = "gcc11";
   });
   user = "bg";
-in
-{
+in {
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ./cachix.nix
     ((builtins.fetchTarball {
-      url = "https://github.com/symphorien/nixseparatedebuginfod/archive/9b7a087a98095c26d1ad42a05102e0edfeb49b59.tar.gz";
-      sha256 = "sha256:1jbkv9mg11bcx3gg13m9d1jmg4vim7prny7bqsvlx9f78142qrlw";
-    })
-    + "/module.nix")
+        url = "https://github.com/symphorien/nixseparatedebuginfod/archive/9b7a087a98095c26d1ad42a05102e0edfeb49b59.tar.gz";
+        sha256 = "sha256:1jbkv9mg11bcx3gg13m9d1jmg4vim7prny7bqsvlx9f78142qrlw";
+      })
+      + "/module.nix")
   ];
 
   # config = {
@@ -43,7 +42,7 @@ in
   boot.loader.systemd-boot.enable = true;
   #boot.loader.grub.device = "/dev/sdb";
 
-  boot.supportedFilesystems = [ "ntfs" ];
+  boot.supportedFilesystems = ["ntfs"];
 
   #  boot.loader = {
   #	  efi = {
@@ -101,7 +100,7 @@ in
     driSupport32Bit = true;
   };
 
-  services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.videoDrivers = ["nvidia"];
 
   boot.kernelPackages =
     pkgs.linuxPackages
@@ -164,13 +163,13 @@ in
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = ["nix-command" "flakes"];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.bg = {
     isNormalUser = true;
     description = "bg";
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    extraGroups = ["networkmanager" "wheel" "docker"];
     packages = with pkgs; [
       firefox
       google-chrome
@@ -191,7 +190,7 @@ in
     ];
   };
 
-  environment.shells = with pkgs; [ zsh ];
+  environment.shells = with pkgs; [zsh];
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
   # environment.binsh = "${pkgs.dash}/bin/dash";
@@ -207,7 +206,7 @@ in
   systemd.targets.suspend.enable = false;
   systemd.targets.hibernate.enable = false;
   systemd.targets.hybrid-sleep.enable = false;
-  systemd.targets."bluetooth".after = [ "systemd-tmpfiles-setup.service" ];
+  systemd.targets."bluetooth".after = ["systemd-tmpfiles-setup.service"];
   systemd.tmpfiles.rules = [
     "d /var/lib/bluetooth 700 root root - -"
   ];
