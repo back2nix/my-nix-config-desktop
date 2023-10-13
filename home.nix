@@ -283,6 +283,7 @@ in
       # n = "nvim";
       ll = "ls -l";
       ch = "stat --format '%a'";
+      mark = "glow";
       cdspeak = "cd ~/Documents/code/github.com/back2nix/speaker";
       cdgo = "cd ~/Documents/code/github.com/back2nix";
       fe = "rg --files ''\${1:-.} | fzf --preview 'bat -f {}' | xargs $EDITOR";
