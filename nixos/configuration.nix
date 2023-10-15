@@ -32,7 +32,10 @@ in {
         sha256 = "sha256:1jbkv9mg11bcx3gg13m9d1jmg4vim7prny7bqsvlx9f78142qrlw";
       })
       + "/module.nix")
+    # ./services/sunshine.nix
   ];
+
+  # services.sunshine.enable = true;
 
   # config = {
   services.nixseparatedebuginfod.enable = true;
@@ -131,6 +134,7 @@ in {
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
+  # services.xserver.displayManager.gdm.wayland = false;
 
   # Configure keymap in X11
   services.xserver = {
