@@ -1,13 +1,12 @@
-{ config
-, pkgs
-, inputs
-, lib
-, ...
-}:
-let
-  user = "bg";
-in
 {
+  config,
+  pkgs,
+  inputs,
+  lib,
+  ...
+}: let
+  user = "bg";
+in {
   imports = [
     # inputs.nix-colors.homeManagerModules.default
     # inputs.xremap-flake.homeManagerModules.default
@@ -95,7 +94,7 @@ in
     # # overrides. You can do that directly here, just don't forget the
     # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
     # # fonts?
-    (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
+    (pkgs.nerdfonts.override {fonts = ["FantasqueSansMono"];})
 
     # # You can also create simple shell scripts directly inside your
     # # configuration. For example, this adds a command 'my-hello' to your
@@ -151,6 +150,11 @@ in
     asciinema # record the terminal
     drawio # diagram design
     insomnia # rest client with graphql support
+    opera
+    fd
+    lazygit
+    gdu
+    bottom
     # microsoft-edge
     # my-yandex-browser
     # (pkgs.callPackage ./yandex-browser.nix { })
@@ -159,6 +163,7 @@ in
 
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
+      "opera"
       # "yandex-browser"
       # "microsoft-edge-stable"
     ];
@@ -282,14 +287,26 @@ in
     shellAliases = {
       # n = "nvim";
       ll = "ls -l";
+      rem2loc = ''
+        function ssh-port() { 
+                  local port=$((RANDOM % 60000 + 1024)); 
+                  echo ssh -L "$port":localhost:$1 desktop -N;
+                  echo http://localhost:"$port" or https://localhost:"$port"; 
+                  ssh -L "$port":localhost:$1 desktop -N; 
+                }; ssh-port'';
+      rem2loc_norand = ''
+        function ssh-port() { 
+                  echo ssh -L "$2":localhost:$1 desktop -N;
+                  echo http://localhost:"$2" or https://localhost:"$2"; 
+                  ssh -L "$2":localhost:$1 desktop -N; 
+                }; ssh-port'';
       ch = "stat --format '%a'";
-      mark = "glow";
       cdspeak = "cd ~/Documents/code/github.com/back2nix/speaker";
       cdgo = "cd ~/Documents/code/github.com/back2nix";
       fe = "rg --files ''\${1:-.} | fzf --preview 'bat -f {}' | xargs $EDITOR";
       # Search content and Edit
       se = ''        fileline = $(rg - n ''${1:-.} | fzf | awk '{print $1}' | sed 's/.$//')
-                $EDITOR ''${fileline%%:*} +''${fileline##*:}
+                    $EDITOR ''${fileline%%:*} +''${fileline##*:}
       '';
       fl = ''git log --oneline --color=always | fzf --ansi --preview=" echo { } | cut - d ' ' - f 1 | xargs - I @ sh -c 'git log --pretty=medium -n 1 @; git diff @^ @' | bat --color=always" | cut -d ' ' -f 1 | xargs git log --pretty=short -n 1'';
       gd = "git diff --name-only --diff-filter=d $@ | xargs bat --diff";
