@@ -6,6 +6,9 @@
   ...
 }: let
   user = "bg";
+  # zellij = pkgs.callPackage ./zellij.nix {
+  #   inherit (pkgs.darwin.apple_sdk.frameworks) DiskArbitration Foundation;
+  # };
 in {
   imports = [
     # inputs.nix-colors.homeManagerModules.default
@@ -155,6 +158,8 @@ in {
     lazygit
     gdu
     bottom
+    sqlite
+    zellij
     # microsoft-edge
     # my-yandex-browser
     # (pkgs.callPackage ./yandex-browser.nix { })
@@ -181,6 +186,7 @@ in {
     ".cargo/config".source = ./cargoconfig;
     ".gdbinit".source = ./gdbinit;
     ".gdbinit.d/init".source = ./gdbinit.d_init;
+    ".config/zellij/config.kdl".source = ./zellij;
 
     # ".tmux.conf" = {
     #   text = builtins.readFile ./tmux/tmux.conf;
@@ -287,6 +293,7 @@ in {
     shellAliases = {
       # n = "nvim";
       ll = "ls -l";
+      z = "zellij";
       rem2loc = ''
         function ssh-port() { 
                   local port=$((RANDOM % 60000 + 1024)); 
