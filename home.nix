@@ -109,7 +109,6 @@ in {
     gcc
     xclip
     gnumake
-    fzf
     multipass
     telegram-desktop
     keepassxc
@@ -153,13 +152,17 @@ in {
     asciinema # record the terminal
     drawio # diagram design
     insomnia # rest client with graphql support
-    opera
-    fd
-    lazygit
-    gdu
-    bottom
+    # opera
     sqlite
     zellij
+    gh-dash # github pull request
+    hub # create pull request
+    rm-improved
+    pcmanfm
+    # firefox
+    google-chrome
+    gnome.eog # image viewer
+    evince # pdf reader
     # microsoft-edge
     # my-yandex-browser
     # (pkgs.callPackage ./yandex-browser.nix { })
@@ -168,7 +171,8 @@ in {
 
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
-      "opera"
+      # "opera"
+      "google-chrome"
       # "yandex-browser"
       # "microsoft-edge-stable"
     ];
@@ -217,8 +221,6 @@ in {
     EDITOR = "nvim";
     GTK_THEME = "Adwaita:dark";
   };
-
-  #environment.systemPackages = [ pkgs.neovim ];
 
   programs.neovim = {
     enable = true;
@@ -291,9 +293,11 @@ in {
       theme = "agnoster-nix";
     };
     shellAliases = {
-      # n = "nvim";
+      img = "eog"; # image viewer
+      pdf = "evince"; # pdf reader
       ll = "ls -l";
       z = "zellij";
+      n = "nvim";
       rem2loc = ''
         function ssh-port() { 
                   local port=$((RANDOM % 60000 + 1024)); 

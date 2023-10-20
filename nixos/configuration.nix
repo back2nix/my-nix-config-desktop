@@ -103,6 +103,10 @@ in {
     driSupport32Bit = true;
   };
 
+  environment.sessionVariables = rec {
+    GTK_THEME = "Adwaita:dark";
+  };
+
   services.xserver.videoDrivers = ["nvidia"];
 
   boot.kernelPackages =
@@ -175,11 +179,16 @@ in {
     description = "bg";
     extraGroups = ["networkmanager" "wheel" "docker"];
     packages = with pkgs; [
-      firefox
-      google-chrome
       neovim
+      fzf
+      fd
+      lazygit
+      gdu
+      bottom
+      nodejs_18
+
+      obfs4
       vim
-      pcmanfm
       ripgrep
       git
       wget
@@ -188,9 +197,8 @@ in {
       tmux
       wget
       direnv
-      gnome.gnome-terminal
       kitty
-      #  thunderbird
+      gnome.gnome-shell
     ];
   };
 
