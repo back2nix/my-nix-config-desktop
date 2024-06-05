@@ -1,1 +1,7 @@
 my-astronvim-config
+private
+presharedKeyFile
+vpn.conf
+shadowsocks.json
+shadowsocks*.json
+hardware-configuration.nix

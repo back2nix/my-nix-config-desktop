@@ -1,292 +1,297 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
 {
   config,
   pkgs,
   ...
 }: let
-  cuda = with pkgs;
-    callPackage "/etc/nixpkgs/pkgs/development/compilers/cudatoolkit/common.nix" {
-      version = "11.8.0";
-      url = "https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run";
-      sha256 = "sha256-kiPErzrr5Ke77Zq9mxY7A6GzS4VfvCtKDRtwasCaWhY=";
-      gcc = "gcc11";
-    };
-  nvdriver = pkgs.linuxPackages.nvidia_x11.overrideAttrs (oldAttrs: {
-    src = pkgs.fetchurl {
-      url = "https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run";
-      sha256 = "sha256-kiPErzrr5Ke77Zq9mxY7A6GzS4VfvCtKDRtwasCaWhY=";
-    };
-    version = "520.61.05";
-    gcc = "gcc11";
-  });
-  user = "bg";
 in {
   imports = [
-    # Include the results of the hardware scan.
+    #<home-manager/nixos>
+    # ./module/wordpress.nix
     ./hardware-configuration.nix
     ./cachix.nix
-    ((builtins.fetchTarball {
-        url = "https://github.com/symphorien/nixseparatedebuginfod/archive/9b7a087a98095c26d1ad42a05102e0edfeb49b59.tar.gz";
-        sha256 = "sha256:1jbkv9mg11bcx3gg13m9d1jmg4vim7prny7bqsvlx9f78142qrlw";
-      })
-      + "/module.nix")
-    # ./services/sunshine.nix
+    ./module/shadowsocks.nix
+    ./module/vpn/vpn.nix
+    ./module/users/users.nix
+    ./module/change.mac.nix
+    ./cuda.nix
   ];
 
-  # services.sunshine.enable = true;
+  boot = {
+    # kernelPackages = pkgs.linuxPackages_latest;
+    loader.systemd-boot.enable = true;
 
-  # config = {
-  services.nixseparatedebuginfod.enable = true;
-  # };
+    supportedFilesystems = ["ntfs"];
 
-  # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  #boot.loader.grub.device = "/dev/sdb";
+    tmp = {
+      useTmpfs = true;
+      tmpfsSize = "25%";
+    };
 
-  boot.supportedFilesystems = ["ntfs"];
+    kernel.sysctl = {
+      "net.ipv4.ip_forward" = "1";
+      "net.ipv6.conf.all.forwarding" = "1";
+      "net.ipv4.conf.all.send_redirects" = "0";
+    };
+  };
 
-  #  boot.loader = {
-  #	  efi = {
-  #		  canTouchEfiVariables = true;
-  #		  efiSysMountPoint = "/boot";
-  #	  };
-  #	  grub = {
-  #		  #useOSProber = true;
-  #		  devices = [ "/dev/sdc" ];
-  #		  #efiSupport = true;
-  #		  enable = true;
-  #		  extraEntries = ''
-  #			  menuentry "Windows" {
-  #				  insmod part_msdos
-  #				  insmod ntfs
-  #				  insmod chain
-  #				  set root=(hd3,msdos1)
-  #				  chainloader +1
-  #			  }
-  #		  '';
-  #	  };
-  #};
+  hardware = {
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+    };
 
-  networking.hostName = "nixos"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+    # pulseaudio.enable = true;
+    pulseaudio.enable = false;
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Enable networking
-  networking.networkmanager.enable = true;
+    bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+      settings = {
+        General = {
+          Enable = "Source,Sink,Media,Socket";
+          Experimental = true;
+        };
+      };
+    };
+  };
 
   # Set your time zone.
   time.timeZone = "Europe/Moscow";
 
   # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
 
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "ru_RU.UTF-8";
-    LC_IDENTIFICATION = "ru_RU.UTF-8";
-    LC_MEASUREMENT = "ru_RU.UTF-8";
-    LC_MONETARY = "ru_RU.UTF-8";
-    LC_NAME = "ru_RU.UTF-8";
-    LC_NUMERIC = "ru_RU.UTF-8";
-    LC_PAPER = "ru_RU.UTF-8";
-    LC_TELEPHONE = "ru_RU.UTF-8";
-    LC_TIME = "ru_RU.UTF-8";
-  };
-
-  hardware.opengl = {
-    enable = true;
-    driSupport = true;
-    driSupport32Bit = true;
-  };
-
-  environment.sessionVariables = rec {
-    GTK_THEME = "Adwaita:dark";
-  };
-
-  services.xserver.videoDrivers = ["nvidia"];
-
-  boot.kernelPackages =
-    pkgs.linuxPackages
-    // {
-      nvidiaPackages.stable = nvdriver;
+    extraLocaleSettings = {
+      LC_ADDRESS = "ru_RU.UTF-8";
+      LC_IDENTIFICATION = "ru_RU.UTF-8";
+      LC_MEASUREMENT = "ru_RU.UTF-8";
+      LC_MONETARY = "ru_RU.UTF-8";
+      LC_NAME = "ru_RU.UTF-8";
+      LC_NUMERIC = "ru_RU.UTF-8";
+      LC_PAPER = "ru_RU.UTF-8";
+      LC_TELEPHONE = "ru_RU.UTF-8";
+      LC_TIME = "ru_RU.UTF-8";
     };
-
-  hardware.nvidia = {
-    # Modesetting is needed for most Wayland compositors
-    modesetting.enable = true;
-
-    # Use the open source version of the kernel module
-    # Only available on driver 515.43.04+
-    open = false;
-
-    # Enable the nvidia settings menu
-    nvidiaSettings = true;
-
-    # Optionally, you may need to select the appropriate driver version for your specific GPU.
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-    #package = config.boot.kernelPackages.nvidiaPackages.legacy_520;
-    # package = nvdriver;
   };
-
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-  # services.xserver.displayManager.gdm.wayland = false;
-
-  # Configure keymap in X11
-  services.xserver = {
-    layout = "us";
-    xkbVariant = "";
-  };
-
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-
-  services.lorri.enable = true; # replace default nix-shell
 
   # Enable sound with pipewire.
   sound.enable = true;
-  hardware.pulseaudio.enable = false;
+  # pavucontol for settings loop back "Monitor of Alder Lake PCH-P High Definition Audio Controller HDMI / DisplayPort 3 Output"
   security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
 
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
+  environment = {
+    sessionVariables = rec {
+      GTK_THEME = "Adwaita:dark";
+      #LD_LIBRARY_PATH = [
+      #  "/run/opengl-driver/lib/:$NIX_LD_LIBRARY_PATH"
+      #];
+    };
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
+    shells = with pkgs; [zsh];
 
-  nix.settings.experimental-features = ["nix-command" "flakes"];
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.bg = {
-    isNormalUser = true;
-    description = "bg";
-    extraGroups = ["networkmanager" "wheel" "docker"];
-    packages = with pkgs; [
-      neovim
-      fzf
-      fd
-      lazygit
-      gdu
-      bottom
-      nodejs_18
-
-      obfs4
-      vim
-      ripgrep
-      git
-      wget
-      htop
-      curl
-      tmux
-      wget
+    # List packages installed in system profile. To search, run:
+    # $ nix search wget
+    systemPackages = with pkgs; [
+      lm_sensors
+      virtualbox
       direnv
-      kitty
-      gnome.gnome-shell
+      tcpdump
+      wireshark
+      tshark
+      pavucontrol
     ];
+
+    etc."proxychains.conf".text = ''
+      strict_chain
+      proxy_dns
+
+      remote_dns_subnet 224
+
+      tcp_read_time_out 15000
+      tcp_connect_time_out 8000
+
+      localnet 127.0.0.0/255.0.0.0
+
+      [ProxyList]
+      # ssh -L 0.0.0.0:1081:localhost:1080 bg@localhost -N
+      # socks5 192.168.0.5 1081
+      socks5 127.0.0.1 1080
+      # socks5 192.168.100.3 1080
+      # socks5 127.0.0.1 8118
+      # socks5 127.0.0.1 9063
+    '';
   };
 
-  environment.shells = with pkgs; [zsh];
-  programs.zsh.enable = true;
+  programs = {
+    zsh.enable = true;
+    ssh.setXAuthLocation = true;
+    nix-ld.enable = true;
+    dconf.enable = true;
+    wireshark.enable = true;
+  };
+
   users.defaultUserShell = pkgs.zsh;
-  # environment.binsh = "${pkgs.dash}/bin/dash";
 
-  # Enable automatic login for the user.
-  services.xserver.displayManager.autoLogin.enable = true;
-  services.xserver.displayManager.autoLogin.user = "bg";
+  systemd = {
+    # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
+    services = {
+      "getty@tty1".enable = false;
+      "autovt@tty1".enable = false;
+      NetworkManager-wait-online.enable = false;
+    };
 
-  # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
-  systemd.services."getty@tty1".enable = false;
-  systemd.services."autovt@tty1".enable = false;
-  systemd.targets.sleep.enable = false;
-  systemd.targets.suspend.enable = false;
-  systemd.targets.hibernate.enable = false;
-  systemd.targets.hybrid-sleep.enable = false;
-  systemd.targets."bluetooth".after = ["systemd-tmpfiles-setup.service"];
-  systemd.tmpfiles.rules = [
-    "d /var/lib/bluetooth 700 root root - -"
-  ];
+    targets.sleep.enable = false;
+    targets.suspend.enable = false;
+    targets.hibernate.enable = false;
+    targets.hybrid-sleep.enable = false;
+    tmpfiles.rules = [
+      "d /var/lib/bluetooth 700 root root - -"
+      # "d /var/lib/wordpress/localhost 0750 wordpress wwwrun - -"
+      # "d /var/lib/wordpress/localhost/wp-content 0750 wordpress wwwrun - -"
+      # "d /var/lib/wordpress/localhost/wp-content/plugins 0750 wordpress wwwrun - -"
+      # "d /var/lib/wordpress/localhost/wp-content/themes 0750 wordpress wwwrun - -"
+      # "d /var/lib/wordpress/localhost/wp-content/upgrade 0750 wordpress wwwrun - -"
+    ];
+    targets."bluetooth".after = ["systemd-tmpfiles-setup.service"];
+    user.services.pipewire-pulse.path = [pkgs.pulseaudio];
+  };
 
-  # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    #  wget
-    wireguard-tools
-  ];
-
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-  programs.ssh.setXAuthLocation = true;
-  services.openssh.settings.X11Forwarding = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.05"; # Did you read the comment?
+  system.stateVersion = "23.11"; # Did you read the comment?
 
   nix = {
     package = pkgs.nixFlakes;
     extraOptions = "experimental-features = nix-command flakes";
   };
 
-  virtualisation.docker.enable = true;
-  virtualisation.docker.rootless = {
-    enable = true;
-    setSocketVariable = true;
-  };
-  virtualisation.vmVariant = {
-    # following configuration is added only when building VM with build-vm
-    virtualisation = {
-      memorySize = 2048; # Use 2048MiB memory.
-      cores = 3;
+  virtualisation = {
+    docker = {
+      enable = true;
+      rootless = {
+        enable = true;
+        setSocketVariable = true;
+      };
+      daemon = {
+        settings = {
+          # registry-mirrors = [
+          #   "https://huecker.io"
+          # ];
+        };
+      };
+    };
+
+    virtualbox.host.enable = true;
+
+    podman = {
+      enable = true;
+      #dockerCompat = true;
+      defaultNetwork.settings = {
+        dns_enabled = true;
+      };
     };
   };
 
-  #SUBSYSTEM=="input", KERNEL=="event[0-9]*", GROUP="${user}", MODE:="0660"
-  services.udev.extraRules = ''
-    KERNEL=="uinput", GROUP="${user}", MODE:="0660"
-  '';
+  swapDevices = [
+    {
+      device = "/var/lib/swapfile";
+      size = 16 * 1024;
+    }
+  ];
 
-  # services.xrdp.enable = true;
-  # services.xrdp.defaultWindowManager = "${pkgs.icewm}/bin/icewm";
-  # networking.firewall.allowedTCPPorts = [ 3389 ];
+  # https://github.com/gvolpe/nix-config/blob/0ed3d66f228a6d54f1e9f6e1ef4bc8daec30c0af/system/configuration.nix#L161
+  fonts.packages = with pkgs; [
+    times-newer-roman
+  ];
+
+  nix = {
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 30d";
+    };
+
+    settings.trusted-users = ["root" "bg"];
+  };
+
+  # Enable networking
+  networking = {
+    networkmanager.enable = true;
+
+    nat = {
+      enable = true;
+      internalInterfaces = ["ve-+"];
+      externalInterface = "wlp0s20f3";
+      # Lazy IPv6 connectivity for the container
+      enableIPv6 = true;
+    };
+
+    extraHosts = ''
+      127.0.0.1 kafka
+    '';
+
+    hostName = "nixos"; # Define your hostname.
+
+    # Open ports in the firewall.
+    firewall = {
+      enable = true;
+      extraCommands = ''
+        iptables -t nat -A PREROUTING -i wlp0s20f3 -p tcp --dport 80 -j REDIRECT --to-port 1081
+        iptables -t nat -A PREROUTING -i wlp0s20f3 -p tcp --dport 443 -j REDIRECT --to-port 1081
+        ip6tables -t nat -A PREROUTING -i wlp0s20f3 -p tcp --dport 80 -j REDIRECT --to-port 1081
+        ip6tables -t nat -A PREROUTING -i wlp0s20f3 -p tcp --dport 443 -j REDIRECT --to-port 1081
+      '';
+    };
+  };
+
+  services = {
+    change-mac = {
+      enable = false;
+      interface = "wlp0s20f3";
+      macAddress = "00:11:22:33:44:55";
+    };
+
+    dbus.packages = [pkgs.dconf];
+
+    udev.packages = [pkgs.gnome3.gnome-settings-daemon];
+
+    libinput.enable = true;
+
+    xserver = {
+      enable = true;
+      videoDrivers = ["modesetting"];
+      xkb = {
+        layout = "us,ru";
+      };
+      displayManager.gdm.enable = true;
+      displayManager.gdm.wayland = false;
+      desktopManager.gnome.enable = true;
+    };
+
+    printing.enable = true;
+
+    openssh = {
+      enable = true;
+      settings.X11Forwarding = true;
+    };
+
+    flatpak.enable = true;
+
+    blueman.enable = true;
+
+    logind.extraConfig = ''
+      RuntimeDirectorySize=16G
+    '';
+
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      pulse.enable = true;
+      wireplumber.enable = true;
+      alsa.support32Bit = true;
+      jack.enable = true;
+    };
+  };
 }

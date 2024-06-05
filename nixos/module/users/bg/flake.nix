@@ -2,7 +2,9 @@
   description = "Home manager configuration of";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    #nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "nixpkgs/nixos-24.05";
+    # nixpkgs-go_1_21.url = "github:tie/nixpkgs/go121-distpack";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -10,7 +12,6 @@
     nix-colors.url = "github:misterio77/nix-colors";
     xremap-flake.url = "github:xremap/nix-flake";
     rustc-nixpkgs.url = "github:nixos/nixpkgs/517501bcf14ae6ec47efd6a17dda0ca8e6d866f9"; # 1.72.0
-    # nixpkgs-go_1_21.url = "github:tie/nixpkgs/go121-distpack";
   };
 
   outputs =
