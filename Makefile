@@ -1,9 +1,22 @@
 REPO_URL := https://github.com/back2nix/my-astronvim-config
 REPO_DIR := my-astronvim-config
 
+
+nix:
+	sudo nixos-rebuild switch
+
+# home:
+# 	home-manager switch
+#
+# flake:
+# 	home-manager switch --flake .
+
 sync:
-	rsync -avP /etc/nixos/* nixos
-	rsync -avP ~/.config/home-manager/* .
+	rsync -avP \
+		--exclude='private' \
+		--exclude='presharedKeyFile' \
+		--exclude='hardware-configuration.nix' \
+		/etc/nixos/* nixos
 	cd $(REPO_DIR) && make sync
 
 push:
@@ -20,4 +33,5 @@ pull:
 	fi
 
 setup: pull
-	rsync -avP $(REPO_DIR)/user ~/.config/nvim/lua/
+	rsync -avP $(REPO_DIR)/plugins ~/.config/nvim/lua/
+

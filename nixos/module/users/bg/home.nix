@@ -30,9 +30,29 @@ in {
 
   nixpkgs.overlays = [
     # (import (builtins.fetchTarball https://github.com/NixOS/nixpkgs/archive/master.tar.gz))
-    (self: super: {
-      yandex-browser = self.callPackage ./overlays/yandex-browser.nix {};
-      genymotion = self.callPackage ./overlays/genymotion.nix {};
+    (final: prev: {
+      yandex-browser = final.callPackage ./overlays/yandex-browser.nix {};
+      genymotion = final.callPackage ./overlays/genymotion.nix {};
+      # FIXME Hack it! gcc use default 9 version.
+      # cudatoolkit-pin = prev.cudaPackages.cudatoolkit.overrideAttrs (oldAttrs: {
+      #   version = "12.4.1";
+      #   src = prev.fetchurl {
+      #     url = "https://developer.download.nvidia.com/compute/cuda/12.4.1/local_installers/cuda_12.4.1_550.54.15_linux.run";
+      #     sha256 = "sha256-Nn0imbOkWIq0h6bScnbKXZ6tbjlJBPGLzLnhJDO5xPs=";
+      #   };
+      # });
+
+      # cudatoolkit = (
+      #   prev.cudatoolkit.overrideAttrs (
+      #     old: rec {
+      #       version = "12.4.1";
+      #       src = final.fetchurl {
+      #         url = "https://developer.download.nvidia.com/compute/cuda/12.4.1/local_installers/cuda_12.4.1_550.54.15_linux.run";
+      #         sha256 = "sha256-Nn0imbOkWIq0h6bScnbKXZ6tbjlJBPGLzLnhJDO5xPs=";
+      #       };
+      #     }
+      #   )
+      # );
     })
   ];
 
@@ -205,6 +225,7 @@ in {
       gedit
       libreoffice
       masterPkg.ollama
+      # cudatoolkit-pin
     ];
 
     file = {

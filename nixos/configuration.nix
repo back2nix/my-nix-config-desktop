@@ -16,6 +16,10 @@ in {
     ./cuda.nix
   ];
 
+  nixpkgs.overlays = [
+    (import ./cudatoolkit-pin)
+  ];
+
   boot = {
     # kernelPackages = pkgs.linuxPackages_latest;
     loader.systemd-boot.enable = true;
@@ -84,9 +88,9 @@ in {
   environment = {
     sessionVariables = rec {
       GTK_THEME = "Adwaita:dark";
-      #LD_LIBRARY_PATH = [
-      #  "/run/opengl-driver/lib/:$NIX_LD_LIBRARY_PATH"
-      #];
+      LD_LIBRARY_PATH = [
+        "/run/opengl-driver/lib/:$NIX_LD_LIBRARY_PATH"
+      ];
     };
 
     shells = with pkgs; [zsh];
@@ -101,6 +105,9 @@ in {
       wireshark
       tshark
       pavucontrol
+      # cudatoolkit-pin
+      #cudatoolkit
+      #linuxPackages.nvidia_x11
     ];
 
     etc."proxychains.conf".text = ''
@@ -148,6 +155,7 @@ in {
     targets.hybrid-sleep.enable = false;
     tmpfiles.rules = [
       "d /var/lib/bluetooth 700 root root - -"
+      "d /var/lib/swapfile 0644 root root - -"
       # "d /var/lib/wordpress/localhost 0750 wordpress wwwrun - -"
       # "d /var/lib/wordpress/localhost/wp-content 0750 wordpress wwwrun - -"
       # "d /var/lib/wordpress/localhost/wp-content/plugins 0750 wordpress wwwrun - -"
@@ -194,12 +202,12 @@ in {
     };
   };
 
-  swapDevices = [
-    {
-      device = "/var/lib/swapfile";
-      size = 16 * 1024;
-    }
-  ];
+  # swapDevices = [
+  #   {
+  #     device = "/swapfile";
+  #     size = 16 * 1024;
+  #   }
+  # ];
 
   # https://github.com/gvolpe/nix-config/blob/0ed3d66f228a6d54f1e9f6e1ef4bc8daec30c0af/system/configuration.nix#L161
   fonts.packages = with pkgs; [
