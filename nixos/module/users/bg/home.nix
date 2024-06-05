@@ -1,25 +1,30 @@
-{
-  config,
-  pkgs,
-  inputs,
-  lib,
-  ...
-}: let
+{ config
+, pkgs
+, inputs
+, lib
+, ...
+}:
+let
   user = "bg";
   masterPkg = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz") {
     nixpkgs.config = {
       allowUnfree = true;
-      allowUnfreePredicate = pkg:
-        builtins.elem (lib.getName pkg) [
-          "google-chrome"
-        ];
+      # allowUnfreePredicate = pkg:
+      #   builtins.elem (lib.getName pkg) [
+      #     "google-chrome"
+      #   ];
     };
   };
-  # zellij = pkgs.callPackage ./zellij.nix {
-  #   inherit (pkgs.darwin.apple_sdk.frameworks) DiskArbitration Foundation;
-  # };
+  ollamaCuda = masterPkg.ollama.override {
+    acceleration = "cuda";
+    config = {
+      rocmSupport = false;
+      cudaSupport = true;
+    };
+  };
   # mitmproxy = masterPkg.mitmproxy;
-in {
+in
+{
   imports = [
     # inputs.nix-colors.homeManagerModules.default
     # inputs.xremap-flake.homeManagerModules.default
@@ -31,8 +36,8 @@ in {
   nixpkgs.overlays = [
     # (import (builtins.fetchTarball https://github.com/NixOS/nixpkgs/archive/master.tar.gz))
     (final: prev: {
-      yandex-browser = final.callPackage ./overlays/yandex-browser.nix {};
-      genymotion = final.callPackage ./overlays/genymotion.nix {};
+      yandex-browser = final.callPackage ./overlays/yandex-browser.nix { };
+      genymotion = final.callPackage ./overlays/genymotion.nix { };
       # FIXME Hack it! gcc use default 9 version.
       # cudatoolkit-pin = prev.cudaPackages.cudatoolkit.overrideAttrs (oldAttrs: {
       #   version = "12.4.1";
@@ -62,6 +67,7 @@ in {
   };
 
   services.lorri.enable = true;
+  # services.ollama.enable = true;
 
   # services.xremap = {
   #   config = {
@@ -126,7 +132,7 @@ in {
       # # overrides. You can do that directly here, just don't forget the
       # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
       # # fonts?
-      (pkgs.nerdfonts.override {fonts = ["FiraCode" "DroidSansMono"];}) # "FantasqueSansMono"
+      (pkgs.nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" ]; }) # "FantasqueSansMono"
 
       # # You can also create simple shell scripts directly inside your
       # # configuration. For example, this adds a command 'my-hello' to your
@@ -135,9 +141,6 @@ in {
       #   echo "Hello, ${config.home.username}!"
       # '')
       nodejs_18
-      gcc
-      xclip
-      gnumake
       multipass
       telegram-desktop
       keepassxc
@@ -146,9 +149,6 @@ in {
       # arion
       deadnix
       # rnix-lsp
-      unzip
-      cargo
-      luarocks
       screenkey
       wshowkeys
       gnome-frog
@@ -215,16 +215,11 @@ in {
       # gnome.gnome-terminal
 
       # golang
-      go_1_21
-      go-outline
-      gopls
-      gopkgs
-      go-tools
-      delve
-      masterPkg.mitmproxy
       gedit
       libreoffice
-      masterPkg.ollama
+      masterPkg.mitmproxy
+      # masterCudaPkg.ollama
+      ollamaCuda
       # cudatoolkit-pin
     ];
 
@@ -464,13 +459,13 @@ in {
   };
 
   xdg.mimeApps.defaultApplications = {
-    "text/palin" = ["nvim"];
-    "video/png" = ["mvp.destop"];
-    "video/*" = ["mvp.destop"];
-    "application/pdf" = ["evince"];
-    "application/x-bzpdf" = ["evince"];
-    "application/x-ext-pdf" = ["evince"];
-    "application/x-gzpdf" = ["evince"];
-    "application/x-xzpdf" = ["evince"];
+    "text/palin" = [ "nvim" ];
+    "video/png" = [ "mvp.destop" ];
+    "video/*" = [ "mvp.destop" ];
+    "application/pdf" = [ "evince" ];
+    "application/x-bzpdf" = [ "evince" ];
+    "application/x-ext-pdf" = [ "evince" ];
+    "application/x-gzpdf" = [ "evince" ];
+    "application/x-xzpdf" = [ "evince" ];
   };
 }

@@ -35,3 +35,5 @@ pull:
 setup: pull
 	rsync -avP $(REPO_DIR)/plugins ~/.config/nvim/lua/
 
+pathelf:
+	sudo ./pathelf.sh /root/.local/share/nvim/lazy/telescope-fzf-native.nvim/build/libfzf.so

@@ -1,13 +1,15 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 # https://github.com/TaiBa131/dotfiles/blob/ec8c98b6fc7e53777e64e2ec1599fee0315f8e5d/users/users.nix
-
 let
   inherit (import ../../variables.nix) mainUser;
-  home-manager = import (builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-24.05.tar.gz") { };
-in
-
-{
-  imports = [ home-manager.nixos ];
+  home-manager = import (builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-24.05.tar.gz") {};
+in {
+  imports = [home-manager.nixos];
 
   home-manager.users.${mainUser} = import ./bg/home.nix;
 
@@ -20,31 +22,11 @@ in
   users.users.${mainUser} = {
     isNormalUser = true;
     description = "${mainUser}";
-    extraGroups = [ "networkmanager" "wheel" "docker" "podman" "input" "audio" ]; #
+    extraGroups = ["networkmanager" "wheel" "docker" "podman" "input" "audio"]; #
     # openssh = {
     #   authorizedKeys.keys = ["ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCnLD+dQsKPhCV3eY0lMUP4fDrECI1Boe6PbnSHY+eqRpkA/Nd5okdyXvynWETivWsKdDRlT3gIVgEHqEv8s4lzxyZx9G2fAgQVVpBLk18G9wkH0ARJcJ0+RStXLy9mwYl8Bw8J6kl1+t0FE9Aa9RNtqKzpPCNJ1Uzg2VxeNIdUXawh77kIPk/6sKyT/QTNb5ruHBcd9WYyusUcOSavC9rZpfEIFF6ZhXv2FFklAwn4ggWzYzzSLJlMHzsCGmkKmTdwKijkGFR5JQ3UVY64r3SSYw09RY1TYN/vQFqTDw8RoGZVTeJ6Er/F/4xiVBlzMvxtBxkjJA9HLd8djzSKs8yf amnesia@amnesia"];
     # };
     packages = with pkgs; [
-      neovim
-      fzf
-      fd
-      lazygit
-      gdu
-      bottom
-      nodejs_18
-
-      obfs4
-      vim
-      ripgrep
-      git
-      wget
-      htop
-      curl
-      tmux
-      wget
-      kitty
-      gnome.gnome-shell
-      shadowsocks-libev
     ];
   };
 

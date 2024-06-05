@@ -1,9 +1,13 @@
+{ config
+, pkgs
+, ...
+}:
+let
+  cudaPkg = import (fetchTarball "https://github.com/admercs/nixpkgs/archive/6fbd12c2a062abe04528230998f36730287b6fbd.tar.gz") {
+    config.allowUnfree = true;
+  };
+in
 {
-  config,
-  pkgs,
-  ...
-}: let
-in {
   imports = [
     #<home-manager/nixos>
     # ./module/wordpress.nix
@@ -16,15 +20,11 @@ in {
     ./cuda.nix
   ];
 
-  nixpkgs.overlays = [
-    (import ./cudatoolkit-pin)
-  ];
-
   boot = {
     # kernelPackages = pkgs.linuxPackages_latest;
     loader.systemd-boot.enable = true;
 
-    supportedFilesystems = ["ntfs"];
+    supportedFilesystems = [ "ntfs" ];
 
     tmp = {
       useTmpfs = true;
@@ -93,11 +93,46 @@ in {
       ];
     };
 
-    shells = with pkgs; [zsh];
+    shells = with pkgs; [ zsh ];
 
     # List packages installed in system profile. To search, run:
     # $ nix search wget
     systemPackages = with pkgs; [
+      gcc
+      xclip
+      gnumake
+      unzip
+      cargo
+      luarocks
+      go_1_21
+      go-outline
+      gopls
+      gopkgs
+      go-tools
+      delve
+      telescope
+
+      neovim
+      fzf
+      fd
+      lazygit
+      gdu
+      bottom
+      nodejs_18
+
+      obfs4
+      vim
+      ripgrep
+      git
+      wget
+      htop
+      curl
+      tmux
+      wget
+      kitty
+      gnome.gnome-shell
+      shadowsocks-libev
+
       lm_sensors
       virtualbox
       direnv
@@ -106,6 +141,7 @@ in {
       tshark
       pavucontrol
       # cudatoolkit-pin
+      cudaPkg.cudaPackages_12_4.cudatoolkit
       #cudatoolkit
       #linuxPackages.nvidia_x11
     ];
@@ -162,11 +198,13 @@ in {
       # "d /var/lib/wordpress/localhost/wp-content/themes 0750 wordpress wwwrun - -"
       # "d /var/lib/wordpress/localhost/wp-content/upgrade 0750 wordpress wwwrun - -"
     ];
-    targets."bluetooth".after = ["systemd-tmpfiles-setup.service"];
-    user.services.pipewire-pulse.path = [pkgs.pulseaudio];
+    targets."bluetooth".after = [ "systemd-tmpfiles-setup.service" ];
+    user.services.pipewire-pulse.path = [ pkgs.pulseaudio ];
   };
 
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+  };
 
   system.stateVersion = "23.11"; # Did you read the comment?
 
@@ -221,7 +259,7 @@ in {
       options = "--delete-older-than 30d";
     };
 
-    settings.trusted-users = ["root" "bg"];
+    settings.trusted-users = [ "root" "bg" ];
   };
 
   # Enable networking
@@ -230,7 +268,7 @@ in {
 
     nat = {
       enable = true;
-      internalInterfaces = ["ve-+"];
+      internalInterfaces = [ "ve-+" ];
       externalInterface = "wlp0s20f3";
       # Lazy IPv6 connectivity for the container
       enableIPv6 = true;
@@ -261,15 +299,15 @@ in {
       macAddress = "00:11:22:33:44:55";
     };
 
-    dbus.packages = [pkgs.dconf];
+    dbus.packages = [ pkgs.dconf ];
 
-    udev.packages = [pkgs.gnome3.gnome-settings-daemon];
+    udev.packages = [ pkgs.gnome3.gnome-settings-daemon ];
 
     libinput.enable = true;
 
     xserver = {
       enable = true;
-      videoDrivers = ["modesetting"];
+      videoDrivers = [ "modesetting" ];
       xkb = {
         layout = "us,ru";
       };
