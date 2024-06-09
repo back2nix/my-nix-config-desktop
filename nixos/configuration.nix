@@ -39,11 +39,11 @@ in
   };
 
   hardware = {
-    opengl = {
-      enable = true;
-      driSupport = true;
-      driSupport32Bit = true;
-    };
+    # opengl = {
+    #   enable = true;
+    #   driSupport = true;
+    #   driSupport32Bit = true;
+    # };
 
     # pulseaudio.enable = true;
     pulseaudio.enable = false;

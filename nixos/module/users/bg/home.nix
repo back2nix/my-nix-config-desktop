@@ -6,15 +6,23 @@
 }:
 let
   user = "bg";
-  masterPkg = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz") {
+  masterPkg = (import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz") {
     nixpkgs.config = {
       allowUnfree = true;
-      # allowUnfreePredicate = pkg:
-      #   builtins.elem (lib.getName pkg) [
-      #     "google-chrome"
-      #   ];
+      allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+        "google-chrome"
+      ];
     };
-  };
+  });
+
+  nixvim = import (builtins.fetchGit {
+    url = "https://github.com/nix-community/nixvim";
+    # When using a different channel you can use `ref = "nixos-<version>"` to set it here
+  });
+  # zellij = pkgs.callPackage ./zellij.nix {
+  #   inherit (pkgs.darwin.apple_sdk.frameworks) DiskArbitration Foundation;
+  # };
+  # mitmproxy = masterPkg.mitmproxy;
   ollamaCuda = masterPkg.ollama.override {
     acceleration = "cuda";
     config = {
@@ -22,7 +30,8 @@ let
       cudaSupport = true;
     };
   };
-  # mitmproxy = masterPkg.mitmproxy;
+ 
+
 in
 {
   imports = [
@@ -31,35 +40,20 @@ in
     # ./mime.nix
     #./overlays.nix
     ./dconf.nix
+    nixvim.homeManagerModules.nixvim
+    ./nixvim/nixvim.nix
+    ./tmux/tmux.nix
   ];
 
   nixpkgs.overlays = [
     # (import (builtins.fetchTarball https://github.com/NixOS/nixpkgs/archive/master.tar.gz))
-    (final: prev: {
-      yandex-browser = final.callPackage ./overlays/yandex-browser.nix { };
-      genymotion = final.callPackage ./overlays/genymotion.nix { };
-      # FIXME Hack it! gcc use default 9 version.
-      # cudatoolkit-pin = prev.cudaPackages.cudatoolkit.overrideAttrs (oldAttrs: {
-      #   version = "12.4.1";
-      #   src = prev.fetchurl {
-      #     url = "https://developer.download.nvidia.com/compute/cuda/12.4.1/local_installers/cuda_12.4.1_550.54.15_linux.run";
-      #     sha256 = "sha256-Nn0imbOkWIq0h6bScnbKXZ6tbjlJBPGLzLnhJDO5xPs=";
-      #   };
-      # });
-
-      # cudatoolkit = (
-      #   prev.cudatoolkit.overrideAttrs (
-      #     old: rec {
-      #       version = "12.4.1";
-      #       src = final.fetchurl {
-      #         url = "https://developer.download.nvidia.com/compute/cuda/12.4.1/local_installers/cuda_12.4.1_550.54.15_linux.run";
-      #         sha256 = "sha256-Nn0imbOkWIq0h6bScnbKXZ6tbjlJBPGLzLnhJDO5xPs=";
-      #       };
-      #     }
-      #   )
-      # );
+    (self: super: {
+      yandex-browser = self.callPackage ./overlays/yandex-browser.nix { };
+      genymotion = self.callPackage ./overlays/genymotion.nix { };
+      # neovim = masterPkg.neovim;
     })
   ];
+
 
   xdg.configFile = {
     "kitty/kitty.conf".source = ./kitty.conf;
@@ -67,7 +61,6 @@ in
   };
 
   services.lorri.enable = true;
-  # services.ollama.enable = true;
 
   # services.xremap = {
   #   config = {
@@ -117,7 +110,7 @@ in
 
   # colorScheme = inputs.nix-colors.colorSchemes.dracula;
 
-  programs.direnv.enable = true;
+
 
   home = {
     username = "${user}";
@@ -141,6 +134,9 @@ in
       #   echo "Hello, ${config.home.username}!"
       # '')
       nodejs_18
+      gcc
+      xclip
+      gnumake
       multipass
       telegram-desktop
       keepassxc
@@ -149,6 +145,24 @@ in
       # arion
       deadnix
       # rnix-lsp
+      # inputs.xremap-flake.packages.${system}.default
+      # libnotify
+      # git diff
+      # diff-so-fancy
+      # opera
+      # zellij
+      # firefox
+      # QT_QPA_PLATFORM=xcb genymotion
+      # wordpress6_4
+      # virtualbox
+      # curl-impersonate-chrome
+      # microsoft-edge
+      # my-yandex-browser
+      # (pkgs.callPackage ./yandex-browser.nix { })
+      # gnome.gnome-terminal
+      unzip
+      cargo
+      luarocks
       screenkey
       wshowkeys
       gnome-frog
@@ -156,8 +170,6 @@ in
       niv
       distrobox
       dconf
-      # inputs.xremap-flake.packages.${system}.default
-      # libnotify
       tree
       nix-template
       marksman
@@ -170,8 +182,6 @@ in
       gtk3
       gnome3.adwaita-icon-theme
       devbox
-      # git diff
-      # diff-so-fancy
       tig # diff and commit view
       file
       python310
@@ -182,14 +192,11 @@ in
       drawio # diagram design
       xmind # draw
       insomnia # rest client with graphql support
-      # opera
       sqlite
-      # zellij
       gh-dash # github pull request
       hub # create pull request
       rm-improved
       pcmanfm
-      # firefox
       google-chrome
       gnome.eog # image viewer
       evince # pdf reader
@@ -197,7 +204,6 @@ in
       gimp
       rawtherapee
       ffmpeg_5-full
-      # QT_QPA_PLATFORM=xcb genymotion
       genymotion
       qemu
       firefox
@@ -206,21 +212,21 @@ in
       yandex-browser
       distrobox
       zoxide
-      # wordpress6_4
-      # virtualbox
-      # curl-impersonate-chrome
-      # microsoft-edge
-      # my-yandex-browser
-      # (pkgs.callPackage ./yandex-browser.nix { })
-      # gnome.gnome-terminal
 
       # golang
+      go_1_21
+      go-outline
+      gopls
+      gopkgs
+      go-tools
+      delve
+      masterPkg.mitmproxy
       gedit
       libreoffice
-      masterPkg.mitmproxy
-      # masterCudaPkg.ollama
-      ollamaCuda
-      # cudatoolkit-pin
+      gh
+      ollamaCuda 
+      # neovim
+      # masterPkg.neovim
     ];
 
     file = {
@@ -229,7 +235,7 @@ in
       # # symlink to the Nix store copy.
       # ".screenrc".source = dotfiles/screenrc;
 
-      ".tmux.conf".source = ./tmux/tmux.conf;
+      # ".tmux.conf".source = ./tmux/tmux.conf;
       ".gitconfig".source = ./gitconfig;
       ".cargo/config".source = ./cargoconfig;
       ".gdbinit".source = ./gdbinit;
@@ -278,8 +284,10 @@ in
   };
 
   programs = {
+    direnv.enable = true;
+
     neovim = {
-      enable = true;
+      enable = false;
       defaultEditor = true;
       plugins = with pkgs.vimPlugins; [
         # ...
@@ -296,19 +304,20 @@ in
     zsh = {
       enable = true;
       enableCompletion = true;
-      initExtra = ''
-                DIRSTACKSIZE=90
-                setopt autopushd pushdsilent pushdtohome
-        ## Remove duplicate entries
-                setopt pushdignoredups
-        ## This reverts the +/- operators.
-                setopt pushdminus
+      initExtra =
+        ''
+          export LANG=en_US.UTF-8
+          DIRSTACKSIZE=90
+          setopt autopushd pushdsilent pushdtohome
+          ## Remove duplicate entries
+          setopt pushdignoredups
+          ## This reverts the +/- operators.
+          setopt pushdminus
 
-                export XDG_DATA_DIRS=$XDG_DATA_DIRS:/usr/share:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share
-                . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
+          export XDG_DATA_DIRS=$XDG_DATA_DIRS:/usr/share:/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share
+          . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
 
-                eval "$(zoxide init zsh)" #
-      '';
+          eval "$(zoxide init zsh)" #'';
       oh-my-zsh = {
         enable = true;
         plugins = [
@@ -345,29 +354,29 @@ in
             local port=$((RANDOM % 60000 + 1024)); 
             echo ssh -L "$port":localhost:$1 desktop -N;
             echo http://localhost:"$port" or https://localhost:"$port"; 
-              ssh -L "$port":localhost:$1 desktop -N; 
+            ssh -L "$port":localhost:$1 desktop -N; 
           }; ssh-port'';
         rem2loc_norand = ''
           function ssh-port() { 
             echo ssh -L "$2":localhost:$1 desktop -N;
             echo http://localhost:"$2" or https://localhost:"$2"; 
-              ssh -L "$2":localhost:$1 desktop -N; 
+            ssh -L "$2":localhost:$1 desktop -N; 
           }; ssh-port'';
         sh = "stat --format '%a'";
         cdspeak = "cd ~/Documents/code/github.com/back2nix/speaker";
         cdgo = "cd ~/Documents/code/github.com/back2nix";
         st = "stat --format '%a'";
         fe = ''
-            selected_file=$(rg --files ''${1:-.} | fzf)
-            if [ -n "$selected_file" ]; then
-              $EDITOR ''${selected_file%%:*}
+          selected_file=$(rg --files ''${1:-.} | fzf)
+          if [ -n "$selected_file" ]; then
+          $EDITOR ''${selected_file%%:*}
           fi
         '';
         # Search content and Edit
         se = ''
-            fileline=$(rg -n ''${1:-.} | fzf --preview 'bat -f `echo {} | cut -d ":" -f 1` -r `echo {} | cut -d ":" -f 2`:$((`echo {} | cut -d ":" -f 2`+150))' | awk '{print $1}' | sed 's/.$//')
-            if [[ -n $fileline ]]; then
-              $EDITOR ''${fileline%%:*} +''${fileline##*:}
+          fileline=$(rg -n ''${1:-.} | fzf --preview 'bat -f `echo {} | cut -d ":" -f 1` -r `echo {} | cut -d ":" -f 2`:$((`echo {} | cut -d ":" -f 2`+150))' | awk '{print $1}' | sed 's/.$//')
+          if [[ -n $fileline ]]; then
+          $EDITOR ''${fileline%%:*} +''${fileline##*:}
           fi
         '';
         fl = ''git log --oneline --color=always | fzf --ansi --preview=" echo { } | cut - d ' ' - f 1 | xargs - I @ sh -c 'git log --pretty=medium -n 1 @; git diff @^ @' | bat --color=always" | cut -d ' ' -f 1 | xargs git log --pretty=short -n 1'';
