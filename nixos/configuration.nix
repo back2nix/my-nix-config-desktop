@@ -6,6 +6,12 @@ let
   cudaPkg = import (fetchTarball "https://github.com/admercs/nixpkgs/archive/6fbd12c2a062abe04528230998f36730287b6fbd.tar.gz") {
     config.allowUnfree = true;
   };
+  masterPkg = (import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz") {
+    nixpkgs.config = {
+      allowUnfree = true;
+    };
+  });
+
 in
 {
   imports = [
@@ -144,6 +150,8 @@ in
       cudaPkg.cudaPackages_12_4.cudatoolkit
       #cudatoolkit
       #linuxPackages.nvidia_x11
+      # cudaPkg.nvidia-docker
+      #nvidia-container-toolkit
     ];
 
     etc."proxychains.conf".text = ''
@@ -185,6 +193,7 @@ in
       NetworkManager-wait-online.enable = false;
     };
 
+
     targets.sleep.enable = false;
     targets.suspend.enable = false;
     targets.hibernate.enable = false;
@@ -200,6 +209,7 @@ in
     ];
     targets."bluetooth".after = [ "systemd-tmpfiles-setup.service" ];
     user.services.pipewire-pulse.path = [ pkgs.pulseaudio ];
+    # user.services.docker.path = [ cudaPkg.nvidia-docker ];
   };
 
   nixpkgs.config = {
@@ -216,17 +226,28 @@ in
   virtualisation = {
     docker = {
       enable = true;
+      enableOnBoot = false;
+      # extraOptions = "--add-runtime nvidia=/run/current-system/sw/bin/nvidia-container-runtime";
+      enableNvidia = true;
       rootless = {
         enable = true;
         setSocketVariable = true;
       };
-      daemon = {
+      # package = cudaPkg.docker;
+      # extraPackages = [cudaPkg.nvidia-docker];
+      extraOptions = "--default-runtime=nvidia";
+      daemon= {
         settings = {
           # registry-mirrors = [
           #   "https://huecker.io"
           # ];
+          runtimes = {
+            nvidia = {
+              path = "${pkgs.nvidia-docker}/bin/nvidia-container-runtime";
+            };
+          };
         };
-      };
+      }; 
     };
 
     virtualbox.host.enable = true;
@@ -234,6 +255,7 @@ in
     podman = {
       enable = true;
       #dockerCompat = true;
+      enableNvidia = true;
       defaultNetwork.settings = {
         dns_enabled = true;
       };
@@ -311,6 +333,7 @@ in
       xkb = {
         layout = "us,ru";
       };
+      displayManager.startx.enable = true;
       displayManager.gdm.enable = true;
       displayManager.gdm.wayland = false;
       desktopManager.gnome.enable = true;
@@ -320,7 +343,11 @@ in
 
     openssh = {
       enable = true;
-      settings.X11Forwarding = true;
+      settings = {
+        X11Forwarding = true;
+        X11DisplayOffset = 10;
+        X11UseLocalhost = true;
+      };
     };
 
     flatpak.enable = true;
