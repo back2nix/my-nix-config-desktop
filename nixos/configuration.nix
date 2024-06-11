@@ -26,6 +26,13 @@ in
     ./cuda.nix
   ];
 
+  nixpkgs.overlays = [
+    # ( final: prev: {
+    #   unstable = cudaPkg.legacyPackages.${prev.system};
+    #   nvidia-container-toolkit = cudaPkg.legacyPackages.${prev.system}.nvidia-container-toolkit;
+    # }) 
+  ];
+
   boot = {
     # kernelPackages = pkgs.linuxPackages_latest;
     loader.systemd-boot.enable = true;
@@ -53,6 +60,8 @@ in
 
     # pulseaudio.enable = true;
     pulseaudio.enable = false;
+
+    nvidia-container-toolkit.enable = true;
 
     bluetooth = {
       enable = true;
@@ -151,7 +160,7 @@ in
       #cudatoolkit
       #linuxPackages.nvidia_x11
       # cudaPkg.nvidia-docker
-      #nvidia-container-toolkit
+      # cudaPkg.nvidia-container-toolkit
     ];
 
     etc."proxychains.conf".text = ''
