@@ -22,7 +22,7 @@ in {
     ./module/users/users.nix
     ./module/change.mac.nix
     ./cuda.nix
-    ./opendevin.nix
+    # ./opendevin.nix
   ];
 
   nixpkgs.overlays = [

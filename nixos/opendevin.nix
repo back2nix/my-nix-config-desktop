@@ -38,8 +38,11 @@
         environment = {
           SANDBOX_USER_ID = "1000";
           SANDBOX_TYPE = "exec";
-          LLM_API_KEY = "ollama";
-          LLM_BASE_URL = "http://host.docker.internal:11434";
+          PERSIST_SANDBOX = "true";
+          LITELLM_DROP_PARAMS = "true";
+          # LLM_API_KEY = "ollama";
+          # LLM_BASE_URL = "http://host.docker.internal:11434";
+          # LLM_BASE_URL = "https://api.mistral.ai/v1/fim/completions";
           WORKSPACE_MOUNT_PATH = "/home/bg/Documents/code/github.com/back2nix/nix/test/opendevin/workspace";
         };
         extraOptions = [
