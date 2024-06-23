@@ -32,7 +32,7 @@
         # TODO: Make conditional if X11/Wayland enabled
         # providers.wl-copy.enable = true;
         providers.xclip.enable = pkgs.stdenv.isLinux;
-        providers.xsel.enable = pkgs.stdenv.isDarwin;
+        # providers.xsel.enable = pkgs.stdenv.isDarwin;
       };
 
       opts = {
@@ -123,6 +123,24 @@
 
         dap = {
           enable = true;
+          signs = {
+            dapBreakpoint = {
+              text = "●";
+              texthl = "DapBreakpoint";
+            };
+            dapBreakpointCondition = {
+              text = "●";
+              texthl = "DapBreakpointCondition";
+            };
+            dapLogPoint = {
+              text = "◆";
+              texthl = "DapLogPoint";
+            };
+            dapBreakpointRejected = {
+              text = "R";
+              texthl = "DiagnosticError";
+            };
+          };
           extensions = {
             dap-go = {
               enable = true;
@@ -409,7 +427,7 @@
             gotmpl
             cpp
             nix
-            bash
+            # bash
             html
             # help
             latex
@@ -613,7 +631,7 @@
             # Docker
             dockerls.enable = true;
             # Bash
-            bashls.enable = true;
+            # bashls.enable = true;
             # C/C++
             clangd.enable = true;
             # C#

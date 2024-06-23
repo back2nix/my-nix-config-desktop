@@ -1,19 +1,17 @@
-{ config
-, pkgs
-, ...
-}:
-let
+{
+  config,
+  pkgs,
+  ...
+}: let
   cudaPkg = import (fetchTarball "https://github.com/admercs/nixpkgs/archive/6fbd12c2a062abe04528230998f36730287b6fbd.tar.gz") {
     config.allowUnfree = true;
   };
-  masterPkg = (import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz") {
+  masterPkg = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz") {
     nixpkgs.config = {
       allowUnfree = true;
     };
-  });
-
-in
-{
+  };
+in {
   imports = [
     #<home-manager/nixos>
     # ./module/wordpress.nix
@@ -24,20 +22,21 @@ in
     ./module/users/users.nix
     ./module/change.mac.nix
     ./cuda.nix
+    ./opendevin.nix
   ];
 
   nixpkgs.overlays = [
     # ( final: prev: {
     #   unstable = cudaPkg.legacyPackages.${prev.system};
     #   nvidia-container-toolkit = cudaPkg.legacyPackages.${prev.system}.nvidia-container-toolkit;
-    # }) 
+    # })
   ];
 
   boot = {
     # kernelPackages = pkgs.linuxPackages_latest;
     loader.systemd-boot.enable = true;
 
-    supportedFilesystems = [ "ntfs" ];
+    supportedFilesystems = ["ntfs"];
 
     tmp = {
       useTmpfs = true;
@@ -48,6 +47,7 @@ in
       "net.ipv4.ip_forward" = "1";
       "net.ipv6.conf.all.forwarding" = "1";
       "net.ipv4.conf.all.send_redirects" = "0";
+      "net.ipv4.ip_unprivileged_port_start" = 0;
     };
   };
 
@@ -108,7 +108,7 @@ in
       ];
     };
 
-    shells = with pkgs; [ zsh ];
+    shells = with pkgs; [zsh];
 
     # List packages installed in system profile. To search, run:
     # $ nix search wget
@@ -156,11 +156,14 @@ in
       tshark
       pavucontrol
       # cudatoolkit-pin
-      cudaPkg.cudaPackages_12_4.cudatoolkit
       #cudatoolkit
       #linuxPackages.nvidia_x11
       # cudaPkg.nvidia-docker
       # cudaPkg.nvidia-container-toolkit
+      # cudaPkg.cudaPackages_12_4.cudatoolkit
+      # cudaPkg.nvtopPackages.nvidia
+      cudaPackages.cudatoolkit
+      # nvtopPackages.nvidia
     ];
 
     etc."proxychains.conf".text = ''
@@ -202,7 +205,6 @@ in
       NetworkManager-wait-online.enable = false;
     };
 
-
     targets.sleep.enable = false;
     targets.suspend.enable = false;
     targets.hibernate.enable = false;
@@ -216,8 +218,8 @@ in
       # "d /var/lib/wordpress/localhost/wp-content/themes 0750 wordpress wwwrun - -"
       # "d /var/lib/wordpress/localhost/wp-content/upgrade 0750 wordpress wwwrun - -"
     ];
-    targets."bluetooth".after = [ "systemd-tmpfiles-setup.service" ];
-    user.services.pipewire-pulse.path = [ pkgs.pulseaudio ];
+    targets."bluetooth".after = ["systemd-tmpfiles-setup.service"];
+    user.services.pipewire-pulse.path = [pkgs.pulseaudio];
     # user.services.docker.path = [ cudaPkg.nvidia-docker ];
   };
 
@@ -237,26 +239,26 @@ in
       enable = true;
       enableOnBoot = false;
       # extraOptions = "--add-runtime nvidia=/run/current-system/sw/bin/nvidia-container-runtime";
-      enableNvidia = true;
+      # enableNvidia = true;
       rootless = {
         enable = true;
         setSocketVariable = true;
       };
       # package = cudaPkg.docker;
       # extraPackages = [cudaPkg.nvidia-docker];
-      extraOptions = "--default-runtime=nvidia";
-      daemon= {
+      # extraOptions = "--default-runtime=nvidia";
+      daemon = {
         settings = {
           # registry-mirrors = [
           #   "https://huecker.io"
           # ];
-          runtimes = {
-            nvidia = {
-              path = "${pkgs.nvidia-docker}/bin/nvidia-container-runtime";
-            };
-          };
+          # runtimes = {
+          #   nvidia = {
+          #     path = "${pkgs.nvidia-docker}/bin/nvidia-container-runtime";
+          #   };
+          # };
         };
-      }; 
+      };
     };
 
     virtualbox.host.enable = true;
@@ -290,7 +292,7 @@ in
       options = "--delete-older-than 30d";
     };
 
-    settings.trusted-users = [ "root" "bg" ];
+    settings.trusted-users = ["root" "bg"];
   };
 
   # Enable networking
@@ -299,12 +301,13 @@ in
 
     nat = {
       enable = true;
-      internalInterfaces = [ "ve-+" ];
+      internalInterfaces = ["ve-+"];
       externalInterface = "wlp0s20f3";
       # Lazy IPv6 connectivity for the container
       enableIPv6 = true;
     };
 
+    # 127.0.0.1 host.docker.internal
     extraHosts = ''
       127.0.0.1 kafka
     '';
@@ -323,6 +326,7 @@ in
     };
   };
 
+  # hardware.nvidia.modesetting.enable = true; # ./cuda.nix
   services = {
     change-mac = {
       enable = false;
@@ -330,22 +334,27 @@ in
       macAddress = "00:11:22:33:44:55";
     };
 
-    dbus.packages = [ pkgs.dconf ];
+    dbus.packages = [pkgs.dconf];
 
-    udev.packages = [ pkgs.gnome3.gnome-settings-daemon ];
+    udev.packages = [pkgs.gnome3.gnome-settings-daemon];
 
     libinput.enable = true;
 
     xserver = {
       enable = true;
-      videoDrivers = [ "modesetting" ];
+      autorun = true;
+      # videoDrivers = ["modesetting" "nvidia"]; # ./cuda.nix
       xkb = {
         layout = "us,ru";
       };
-      displayManager.startx.enable = true;
-      displayManager.gdm.enable = true;
-      displayManager.gdm.wayland = false;
+      displayManager = {
+        gdm = {
+          enable = true;
+          wayland = false;
+        };
+      };
       desktopManager.gnome.enable = true;
+      displayManager = {startx.enable = true;};
     };
 
     printing.enable = true;
@@ -355,7 +364,7 @@ in
       settings = {
         X11Forwarding = true;
         X11DisplayOffset = 10;
-        X11UseLocalhost = true;
+        #X11UseLocalhost = true;
       };
     };
 
